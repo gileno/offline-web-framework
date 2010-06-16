@@ -1,7 +1,6 @@
 /**
  * @author orygens
  */
-
 var Offline = {
 	logging : {
 		// Default Loggin
@@ -9,25 +8,24 @@ var Offline = {
 	settings : {
 		// Default settings
 	}
-}
-
+};
 /**
- * Null logging
+ * Alert logging
  * @param {Object} $
  * @param {Object} $Off
  */
 (function($, $Off) {
-	var nullFunction = function() {
+	var alertFunction = function(message) {
+		alert(message);
 		return this;
 	};
 	$.extend($Off.logging, {
-		debug : nullFunction,
-		info : nullFunction,
-		warn : nullFunction,
-		error : nullFunction
+		debug : alertFunction,
+		info : alertFunction,
+		warn : alertFunction,
+		error : alertFunction
 	});
-})(Jquery, Offline);
-
+})(jQuery, Offline);
 /**
  * Default settings
  * @param {Object} $
@@ -50,7 +48,41 @@ var Offline = {
             });
 		}
 	});
-})(Jquery, Offline);
+})(jQuery, Offline);
+
+/**
+ * Cache Template
+ * @param {Object} $
+ * @param {Object} $Off
+ */
+(function($, $Off){
+	$Off.CacheTemplate = function(options) {
+		$.extend(this, options);
+		return this;
+	};
+    $.extend($Off.CacheTemplate, {
+		cache: {},
+        size: 0,
+        clear: function(){
+            this.cache = {};
+            this.size = 0;
+        },
+        add: function(id, object){
+            this.cache[id] = object;
+            this.size++;
+            return id;
+        },
+        remove: function(id){
+            if (this.find(id)) {
+                return (delete this.cache[id]) ? --this.size : -1;
+            }
+            return null;
+        },
+        find: function(id){
+            return cache[id] || null;
+        }
+    });
+})(jQuery, Offline);
 
 /**
  * Template renderer
@@ -75,7 +107,7 @@ var Offline = {
 	        } 
 		});
 	}
-})(Jquery, Offline);
+})(jQuery, Offline);
 
 /**
  * Request Object
@@ -98,6 +130,7 @@ var Offline = {
 			method : method,
 			args : args
 		});
+		return this;
     };
 	$Off.Response = function(content, status) {
 		if(status == undefined) {
@@ -107,8 +140,9 @@ var Offline = {
 			content : content,
 			status : status
 		});
+		return this;
 	};
-})(Jquery, Offline);
+})(jQuery, Offline);
 
 /**
  * 
@@ -127,19 +161,21 @@ var Offline = {
 		var urls = $Off.settings.urls;
 		var view = null;
 		for(current in urls) {
+			current = urls[current];
 			if(current.url && current.url == url) {
 				view = current;
+				break;
 			}
 		}
 		if(view == null || view == undefined) {
-			$.logging.error("No view found with the url: " + url);
+			$Off.logging.error("No view found with the url: " + url);
 			throw new $Off.ViewError(null);
 		} else if(!$.isFunction(view.view)) {
-            $.logging.error("The view " + view.view + " is not a function");
+            $Off.logging.error("The view " + view.view + " is not a function");
         }
 		return view;
 	};
-	$.extend($.Off, {
+	$.extend($Off, {
 		get : function(url) {
 			document.location.hash = url;
 			var args = {};
@@ -148,9 +184,32 @@ var Offline = {
 			}
 			var request = $Off.Request(url, "GET", args);
 			var view = getView(url);
-			var response = view.view(request, view.extras);
-			var $container = $($Off.settings.container);
-			$container.html(response.content);
+			if(view.template == undefined) {
+				var response = view.view(request, view.extras);
+	            var $container = $($Off.settings.container);
+	            $container.html(response.content);
+			} else {
+				/*$.ajax({
+					url : view.template,
+					type : "GET",
+					success : function(template) {
+						var response = view.view(request, template, view.extras);
+		                var $container = $($Off.settings.container);
+		                $container.html(response.content);
+					},
+					error : function(XMLHttpRequest, textStatus, errorThrown) {
+                        $Off.logging.error("Template not found");
+					}
+				});*/
+				var template = $Off.CacheTemplate.find(view.template);
+				if(template != null) {
+					var response = view.view(request, template, view.extras);
+	                var $container = $($Off.settings.container);
+	                $container.html(response.content);
+				} else {
+					$Off.logging.error("Template not found");
+				}
+			}
 		},
 		post : function(url, args) {
 			var request = $Off.Request(url, "POST", args);
@@ -158,10 +217,35 @@ var Offline = {
             var response = view.view(request, view.extras);
             var $container = $($Off.settings.container);
             $container.html(response.content);
+		},
+		getUrl : function(name) {
+			var urls = $Off.settings.urls;
+	        var view = null;
+	        for(current in urls) {
+	            if(current.name && current.name == name) {
+	                view = current;
+					break;
+	            }
+	        }
+			return view;
 		}
 	});
-})(Jquery, Offline);
+})(jQuery, Offline);
 
 (function($, $Off) {
-	
-})(Jquery, Offline);
+    $.extend($Off, {
+        init : function(urls, container) {
+			$Off.setUrls(urls);
+			$Off.setContainer(container);
+			var urls = $Off.settings.urls;
+            for(url in urls) {
+				url = urls[url];
+                if(url.template) {
+					$.get(url.template, function(template) {
+						$Off.CacheTemplate.add(url.template, template);
+					});
+				}
+            }
+		}
+    });
+})(jQuery, Offline);
