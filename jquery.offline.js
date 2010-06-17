@@ -162,14 +162,13 @@ var Offline = {
 		var view = null;
 		for(current in urls) {
 			current = urls[current];
-			if(current.url && current.url == url) {
+			if(current.url == url) {
 				view = current;
 				break;
 			}
 		}
 		if(view == null || view == undefined) {
 			$Off.logging.error("No view found with the url: " + url);
-			throw new $Off.ViewError(null);
 		} else if(!$.isFunction(view.view)) {
             $Off.logging.error("The view " + view.view + " is not a function");
         }
@@ -177,7 +176,9 @@ var Offline = {
 	};
 	$.extend($Off, {
 		get : function(url) {
-			document.location.hash = url;
+            if(url != '') {
+                document.location.hash = url;
+            }
 			var args = {};
 			if(url.indexOf("?") != -1) {
 	            args = url.substring(args.indexOf("?")+1);
@@ -189,7 +190,7 @@ var Offline = {
 	            var $container = $($Off.settings.container);
 	            $container.html(response.content);
 			} else {
-				/*$.ajax({
+				$.ajax({
 					url : view.template,
 					type : "GET",
 					success : function(template) {
@@ -200,18 +201,13 @@ var Offline = {
 					error : function(XMLHttpRequest, textStatus, errorThrown) {
                         $Off.logging.error("Template not found");
 					}
-				});*/
-				var template = $Off.CacheTemplate.find(view.template);
-				if(template != null) {
-					var response = view.view(request, template, view.extras);
-	                var $container = $($Off.settings.container);
-	                $container.html(response.content);
-				} else {
-					$Off.logging.error("Template not found");
-				}
+				});
 			}
 		},
 		post : function(url, args) {
+			if(url != '') {
+                document.location.hash = url;
+            }
 			var request = $Off.Request(url, "POST", args);
             var view = getView(url);
             var response = view.view(request, view.extras);
@@ -233,19 +229,27 @@ var Offline = {
 })(jQuery, Offline);
 
 (function($, $Off) {
+	$.extend($Off, {
+		currentPage : null
+	});
     $.extend($Off, {
         init : function(urls, container) {
 			$Off.setUrls(urls);
 			$Off.setContainer(container);
-			var urls = $Off.settings.urls;
-            for(url in urls) {
-				url = urls[url];
-                if(url.template) {
-					$.get(url.template, function(template) {
-						$Off.CacheTemplate.add(url.template, template);
-					});
-				}
-            }
+			self.setInterval("checkPage()", 300);
 		}
     });
 })(jQuery, Offline);
+
+function checkPage() {
+    var page = document.location.hash;
+    var indexHash = page.indexOf("#");
+    if(indexHash != -1) {
+        page = page.substring(indexHash+1);
+    }
+	if(Offline.currentPage == null 
+	   || page != Offline.currentPage) {
+        Offline.currentPage = page;
+        Offline.get(page);
+   }
+}
