@@ -174,11 +174,13 @@ var Offline = {
         }
 		return view;
 	};
+	var processUrl = function(url) {
+        document.location.hash = url;
+		$Off.currentPage = url;
+	};
 	$.extend($Off, {
 		get : function(url) {
-            if(url != '') {
-                document.location.hash = url;
-            }
+            processUrl(url);
 			var args = {};
 			if(url.indexOf("?") != -1) {
 	            args = url.substring(args.indexOf("?")+1);
@@ -205,9 +207,7 @@ var Offline = {
 			}
 		},
 		post : function(url, args) {
-			if(url != '') {
-                document.location.hash = url;
-            }
+			processUrl(url);
 			var request = $Off.Request(url, "POST", args);
             var view = getView(url);
             var response = view.view(request, view.extras);
