@@ -18,6 +18,12 @@
             function view_page2(request, template, args){
                 return new Offline.Response(Offline.renderer(template, {}));
             }
+			function view_error(request, args){
+                var t = {};
+				var b = t.teste.legal;
+				alert(b);
+				return "";
+            }
             var urls = [{
                 url: '',
                 view: view_page1,
@@ -30,6 +36,16 @@
 				template: "page2.html",
                 args: {},
                 name: 'other_page'
+            }, {
+                url: 'error',
+                view: view_error,
+                args: {},
+                name: 'error'
+            }, {
+                url: '500',
+                template: "500.html",
+                args: {},
+                name: '500'
             }];
 			Offline.init(urls, "#container");
         </script>

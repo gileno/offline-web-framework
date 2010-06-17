@@ -169,14 +169,61 @@ var Offline = {
 		}
 		if(view == null || view == undefined) {
 			$Off.logging.error("No view found with the url: " + url);
-		} else if(!$.isFunction(view.view)) {
-            $Off.logging.error("The view " + view.view + " is not a function");
-        }
+		}
 		return view;
 	};
 	var processUrl = function(url) {
         document.location.hash = url;
 		$Off.currentPage = url;
+	};
+	var processRequest = function(request, view) {
+		if(view.template == undefined) {
+			var response = null;
+			try{
+				if(!$.isFunction(view.view)) {
+		            $Off.logging.error("The view " + view.view + " is not a function");
+		        } else {
+					response = view.view(request, view.extras);
+					var $container = $($Off.settings.container);
+                    $container.html(response.content);
+				}
+			}catch(e) {
+				var error = getView('500');
+				if(error != null) {
+					$.ajax({
+		                url : error.template,
+		                type : "GET",
+		                success : function(template) {
+							if($.isFunction(error.view)) {
+		                        response = error.view(request, error.template, error.extras);
+		                    } else {
+		                        response = $Off.Response($Off.renderer(template), 500);
+		                    }
+		                    var $container = $($Off.settings.container);
+		                    $container.html(response.content);
+		                },
+		                error : function(XMLHttpRequest, textStatus, errorThrown) {
+		                    $Off.logging.error("Template not found");
+		                }
+		            });
+				} else {
+					response = $Off.Response('Page Error', 500);
+				}
+			}
+        } else {
+            $.ajax({
+                url : view.template,
+                type : "GET",
+                success : function(template) {
+                    var response = view.view(request, template, view.extras);
+                    var $container = $($Off.settings.container);
+                    $container.html(response.content);
+                },
+                error : function(XMLHttpRequest, textStatus, errorThrown) {
+                    $Off.logging.error("Template not found");
+                }
+            });
+        }
 	};
 	$.extend($Off, {
 		get : function(url) {
@@ -187,32 +234,13 @@ var Offline = {
 			}
 			var request = $Off.Request(url, "GET", args);
 			var view = getView(url);
-			if(view.template == undefined) {
-				var response = view.view(request, view.extras);
-	            var $container = $($Off.settings.container);
-	            $container.html(response.content);
-			} else {
-				$.ajax({
-					url : view.template,
-					type : "GET",
-					success : function(template) {
-						var response = view.view(request, template, view.extras);
-		                var $container = $($Off.settings.container);
-		                $container.html(response.content);
-					},
-					error : function(XMLHttpRequest, textStatus, errorThrown) {
-                        $Off.logging.error("Template not found");
-					}
-				});
-			}
+			processRequest(request, view);
 		},
 		post : function(url, args) {
 			processUrl(url);
 			var request = $Off.Request(url, "POST", args);
             var view = getView(url);
-            var response = view.view(request, view.extras);
-            var $container = $($Off.settings.container);
-            $container.html(response.content);
+            processRequest(request, view);
 		},
 		getUrl : function(name) {
 			var urls = $Off.settings.urls;
@@ -223,7 +251,7 @@ var Offline = {
 					break;
 	            }
 	        }
-			return view;
+			return view.url;
 		}
 	});
 })(jQuery, Offline);
