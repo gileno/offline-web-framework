@@ -281,3 +281,72 @@ function checkPage() {
         Offline.get(page);
    }
 }
+
+/**
+ * Database Class
+ * @param {Object} $
+ * @param {Object} $Off
+ */
+(function($, $Off) {
+    var getModelKey = function(modelName) {
+        return "model_" + modelName;
+    }
+    $Off.Database = function(options) {
+        $.extend(this, {
+            guid: function() {
+                var _guid = localStorage.getItem('_guid');
+                if(_guid == null) {
+                    _guid = 0;
+                }
+                try {
+                    _guid = parseInt(_guid);
+                }catch(e) {
+                    _guid = 0;
+                }
+                _guid = _guid + 1;
+                localStorage.setItem('_guid', _guid);
+                return (_guid)+"_"+new Date().getTime()+"_"+Math.round(Math.random()*100000000);
+            },
+            save_model: function(modelName, obj) {
+                if(obj.id == undefined || obj.id == null) {
+                    obj.id = this.guid();
+                }
+                var objs = this.getModels(modelName);
+                objs.push(obj);
+                var key = getModelKey(modelName);
+                localStorage.setItem(key, $.toJSON(objs));
+            },
+            getModels : function(modelName) {
+                var key = getModelKey(modelName);
+                var json = localStorage.getItem(key);
+                if(json == null) {
+                    json = "[]";
+                }
+                return $.evalJSON(json);
+            }
+        });
+        $.extend($Off.Database, options);
+    };
+    $.extend($Off, {
+        db: new $Off.Database({})
+    });
+})(jQuery, Offline);
+
+/**
+ * Model Interface
+ * @param {Object} $
+ * @param {Object} $Off
+ */
+(function($, $Off) {
+	$Off.Model = {
+        id: null,
+        name: 'model', // Must be implemented by Derived Class
+        timestamp: new Date().getTime(),
+        save: function() {
+            $Off.db.save_model(this.name, this);
+        },
+        all: function() {
+            return $Off.db.getModels(this.name);
+        }
+    }
+})(jQuery, Offline);
