@@ -1,38 +1,37 @@
 <div id="page1">
     <h1>Home</h1>
-    <h2>Posts</h2>
     {{#entries}}
-        <h3>{{title}}</h3>
-        <p>{{content}}</p>
+        <div class="post">
+            <h3>{{title}}</h3>
+            <p>{{content}}</p>
+        </div>
     {{/entries}}
-    
-    {{^entries}}
-        <p>Nothing...</p>
-    {{/entries}}
-    <table>
-        <tr>
-            <th>
-                <label for="title">Title:</label>
-            </th>
-            <td>
-                <input name="title" id="id_title" type="text">
-            </td>
-        </tr>
-        <tr>
-            <th>
-                <label for="content">Content:</label>
-            </th>
-            <td>
-                <textarea name="content" id="id_content"></textarea>
-            </td>
-        </tr>
-        <tr>
-            <th>&nbsp;</th>
-            <td>
-                <button onclick="save_entry();">Save</button>
-            </td>
-        </tr>
-    </table>
+    <div class="form">
+        <table>
+            <tr>
+                <th>
+                    <label for="title">Title:</label>
+                </th>
+                <td>
+                    <input name="title" id="id_title" type="text">
+                </td>
+            </tr>
+            <tr>
+                <th>
+                    <label for="content">Content:</label>
+                </th>
+                <td>
+                    <textarea name="content" id="id_content" rows="8"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <th>&nbsp;</th>
+                <td>
+                    <button onclick="save_entry();" class="button">Save</button>
+                </td>
+            </tr>
+        </table>
+    </div>
 </div>
 <script type="text/javascript">
     function save_entry() {
