@@ -308,18 +308,30 @@ function checkPage() {
                 return (_guid)+"_"+new Date().getTime()+"_"+Math.round(Math.random()*100000000);
             },
             save_model: function(modelName, obj) {
+				var objs = this.getModels(modelName);
                 if(obj.id == undefined || obj.id == null) {
                     obj.id = this.guid();
-                }
-                var objs = this.getModels(modelName);
+                } else {
+					
+				}
                 objs.push(obj);
                 var key = getModelKey(modelName);
                 localStorage.setItem(key, $.toJSON(objs));
             },
+			delete_model: function(modelName, obj) {
+				var objs = this.getModels(modelName);
+				for(o in objs) {
+                    if(o.id == obj.id) {
+                        delete o;
+                        break;
+                    }
+                }
+			},
             getModels : function(modelName) {
                 var key = getModelKey(modelName);
                 var json = localStorage.getItem(key);
                 if(json == null) {
+					$Off.logging.debug('nda');
                     json = "[]";
                 }
                 return $.evalJSON(json);
@@ -345,8 +357,18 @@ function checkPage() {
         save: function() {
             $Off.db.save_model(this.name, this);
         },
-        all: function() {
-            return $Off.db.getModels(this.name);
-        }
+		objects : function() {
+			var instance = {};
+			var modelName = this.name;
+			$.extend(instance, {
+				all: function() {
+	                return $Off.db.getModels(modelName);
+	            },
+				count: function() {
+					return $Off.db.getModels(modelName).length;
+				}
+			});
+			return instance;
+		}
     }
 })(jQuery, Offline);

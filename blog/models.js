@@ -9,5 +9,5 @@ var BlogModels = {};
         $.extend(this, fields);
         return this;
     };
-    $.extend($BM.Entry.prototype, $Off.Model);
+    $.extend(true, $BM.Entry.prototype, $Off.Model);
 })(jQuery, Offline, BlogModels);
