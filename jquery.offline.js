@@ -290,7 +290,7 @@ function checkPage() {
 (function($, $Off) {
     var getModelKey = function(modelName) {
         return "model_" + modelName;
-    }
+    };
     $Off.Database = function(options) {
         $.extend(this, {
             guid: function() {

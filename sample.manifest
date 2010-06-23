@@ -1,9 +1,15 @@
 CACHE MANIFEST
- 
-# version 16
- 
+
+# version 1
+
 CACHE:
 page1.html
-page2.html
 500.html
 style.css
+jLinq-2.2.1.js
+jquery.js
+jquery.offline.js
+mustache.js
+
+/blog/views.js
+/blog/models.js
