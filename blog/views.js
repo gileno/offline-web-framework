@@ -7,7 +7,6 @@ var BlogViews = {};
                 entry.save();
             }
             var entries = new $BM.Entry().objects().all();
-			$Off.logging.debug(new $BM.Entry().objects().count());
 			return new $Off.Response($Off.renderer(template, {
                 entries: entries
             }));

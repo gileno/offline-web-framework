@@ -331,7 +331,6 @@ function checkPage() {
                 var key = getModelKey(modelName);
                 var json = localStorage.getItem(key);
                 if(json == null) {
-					$Off.logging.debug('nda');
                     json = "[]";
                 }
                 return $.evalJSON(json);
