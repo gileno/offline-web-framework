@@ -9,7 +9,7 @@ style.css
 jLinq-2.2.1.js
 mustache.js
 jquery.js
-jquery.offline.js
+jquery.json.js
 jquery.offline.js
 
 /blog/views.js
