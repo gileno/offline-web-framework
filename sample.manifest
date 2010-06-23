@@ -7,9 +7,10 @@ page1.html
 500.html
 style.css
 jLinq-2.2.1.js
+mustache.js
 jquery.js
 jquery.offline.js
-mustache.js
+jquery.offline.js
 
 /blog/views.js
 /blog/models.js
