@@ -305,15 +305,13 @@ function checkPage() {
                 }
                 _guid = _guid + 1;
                 localStorage.setItem('_guid', _guid);
-                return (_guid)+"_"+new Date().getTime()+"_"+Math.round(Math.random()*100000000);
+                return (_guid)+"_"+new Date().getTime()+"_"+Math.round(Math.random()*1000);
             },
             save_model: function(modelName, obj) {
 				var objs = this.getModels(modelName);
                 if(obj.id == undefined || obj.id == null) {
                     obj.id = this.guid();
-                } else {
-					
-				}
+                } 
                 objs.push(obj);
                 var key = getModelKey(modelName);
                 localStorage.setItem(key, $.toJSON(objs));
@@ -351,14 +349,14 @@ function checkPage() {
 (function($, $Off) {
 	$Off.Model = {
         id: null,
-        name: 'model', // Must be implemented by Derived Class
+        _db_name: 'model', // Must be implemented by Derived Class
         timestamp: new Date().getTime(),
         save: function() {
-            $Off.db.save_model(this.name, this);
+            $Off.db.save_model(this._db_name, this);
         },
 		objects : function() {
 			var instance = {};
-			var modelName = this.name;
+			var modelName = this._db_name;
 			$.extend(instance, {
 				all: function() {
 	                return $Off.db.getModels(modelName);
@@ -370,4 +368,21 @@ function checkPage() {
 			return instance;
 		}
     }
+})(jQuery, Offline);
+
+(function($, $Off){
+	$Off.Session = function(options) {
+		$.extend(this, {
+			getUser: function() {
+				return localStorage.getItem('_user');
+			},
+			setUser: function(user) {
+				localStorage.setItem('_user', user);
+			}
+		});
+		$.extend($Off.Session, options);
+	};
+	$.extend($Off, {
+		session: new $Off.Session({})
+	});
 })(jQuery, Offline);
