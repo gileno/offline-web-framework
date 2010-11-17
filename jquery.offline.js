@@ -1,5 +1,5 @@
 /**
- * @author orygens
+ * @author
  */
 var Offline = {
 	logging : {
